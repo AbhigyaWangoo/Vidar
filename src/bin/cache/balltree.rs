@@ -1,5 +1,6 @@
 use super::node::Node;
 use super::node::Vidvec;
+use super::super::math;
 
 // Converts a list of points into a matrix
 fn points_to_matrix(points: &Vec<Vidvec>) -> Vec<Vec<i64>> {
@@ -14,7 +15,24 @@ fn points_to_matrix(points: &Vec<Vidvec>) -> Vec<Vec<i64>> {
 
 // Finds the dimension in the provided nodes that has the maximum std
 fn get_max_dimension_spread(points: &Vec<Vidvec>) -> u32 {
-    return 0;
+    let mut vec = Vec::new();
+    let mut max_varience = 0.0;
+    let mut max_var_idx = -1;
+
+    for (index, point) in points.iter().enumerate() {
+        for index in point.get_vector() {
+            vec.push(index)
+        }
+        
+        // Find std from vec
+        let variance = math::std(point.get_vector());
+        if variance > max_varience {
+            max_varience = variance;
+            max_var_idx = index as isize;
+        }
+    }
+
+    return max_var_idx;
 }
 
 // Find median idx from set of points
@@ -46,20 +64,25 @@ fn construct(points: &Vec<Vidvec>) -> Box<Node> {
         return Box::new(leaf); 
     } else {
         // let c be the dimension of greatest spread
-        highest_spread_dimension = get_max_dimension_spread(points);
+        let highest_spread_dimension = get_max_dimension_spread(points);
         
         // let p be the central point selected considering c
-        let median_pt = points_median(points, highest_spread_dimension);
+        let median_pt = points_median(points, highest_spread_dimension as i64);
 
         // let L, R be the sets of points lying to the left and right of the median along dimension c
         
         // create B with two children: 
+        let B = Node {
+            left:  Some(Box::new(construct(&points[..median_pt]))),
+            right: Some(Box::new(construct(&points[(median_pt + 1)..].to_vec()))),
+            vid_vector: points[median_pt].clone(),
+        };
         //     B.pivot := p
         //     B.child1 := construct_balltree(L),
         //     B.child2 := construct_balltree(R),
         //     let B.radius be maximum distance from p among children
 
-        // return B
+        return B;
     }
 }
 
