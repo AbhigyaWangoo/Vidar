@@ -18,8 +18,19 @@ fn get_max_dimension_spread(points: &Vec<Vidvec>) -> u32 {
 }
 
 // Find median idx from set of points
-fn points_median(points: &Vec<Vidvec>, dimension: i64) -> u32 {
-    return 0;
+fn points_median(points: &Vec<Vidvec>, dimension: i64) -> usize {
+    // Check if the dimension is within bounds
+    let length = points[0].get_vector().len() as i64;
+    assert!(dimension < length, "Invalid dimension");
+
+    // Sort the points based on the specified dimension
+    let mut sorted_points = points.clone();
+    sorted_points.sort_by_key(|p| p.get_vector()[dimension as usize]);
+
+    // Calculate the median index
+    let median_idx = sorted_points.len() / 2;
+
+    median_idx
 }
 
 // Constructs and returns a balltree's root node
