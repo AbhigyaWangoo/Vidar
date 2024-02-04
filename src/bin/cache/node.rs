@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub struct Vidvec {
     id: String,
     vector_size: u32,
@@ -9,24 +10,25 @@ pub struct Node {
     left: Option<Box<Node>>,
     right: Option<Box<Node>>,
     vid_vector: Vidvec,
+    radius: f64 
 }
 
 impl Node {
-    pub fn new(left: Option<Box<Node>> , right: Option<Box<Node>> , vid_vector: Vidvec) -> Self {
+    pub fn new(left: Option<Box<Node>> , right: Option<Box<Node>> , vid_vector: Vidvec, radius: f64) -> Self {
         // Initialize the vector with zeros and a specified length
-        return Node { left: left, right: right, vid_vector: vid_vector }
+        return Node { left: left, right: right, vid_vector: vid_vector , radius: radius}
     }
 
     pub fn get_vector(&self) -> &Vidvec {
         &self.vid_vector
     }
 
-    pub fn get_right(&self) -> Option<Box<Node>> {
-        self.right
+    pub fn get_right(&self) -> &Option<Box<Node>> {
+        &self.right
     }
 
-    pub fn get_left(&self) -> Option<Box<Node>> {
-        self.left
+    pub fn get_left(&self) -> &Option<Box<Node>> {
+        &self.left
     }
 }
 

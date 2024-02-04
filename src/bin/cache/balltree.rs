@@ -2,17 +2,6 @@ use super::node::Node;
 use super::node::Vidvec;
 use super::super::math;
 
-// Converts a list of points into a matrix
-fn points_to_matrix(points: &Vec<Vidvec>) -> Vec<Vec<i64>> {
-    let mut matrix = Vec::new();
-    
-    for i in points {
-        matrix.push(*i.get_vector());
-    }
-
-    return matrix
-}
-
 // Finds the dimension in the provided nodes that has the maximum std
 fn get_max_dimension_spread(points: &Vec<Vidvec>) -> u32 {
     let mut vec = Vec::new();
@@ -32,11 +21,11 @@ fn get_max_dimension_spread(points: &Vec<Vidvec>) -> u32 {
         }
     }
 
-    return max_var_idx;
+    return max_var_idx as u32;
 }
 
-// Find median idx from set of points
-fn points_median(points: &Vec<Vidvec>, dimension: i64) -> usize {
+// Find median idx from set of points. Returns all elements to the left and right of the median point.
+fn points_median(points: &Vec<Vidvec>, dimension: i64) -> (usize, Vec<Vidvec>, Vec<Vidvec>) {
     // Check if the dimension is within bounds
     let length = points[0].get_vector().len() as i64;
     assert!(dimension < length, "Invalid dimension");
@@ -46,52 +35,65 @@ fn points_median(points: &Vec<Vidvec>, dimension: i64) -> usize {
     sorted_points.sort_by_key(|p| p.get_vector()[dimension as usize]);
 
     // Calculate the median index
-    let median_idx = sorted_points.len() / 2;
+    let median_idx = (sorted_points.len() / 2);
 
-    median_idx
+    // Get the Leftmost values
+    let lhs = sorted_points[0..median_idx].to_vec();
+    let rhs = sorted_points[median_idx..sorted_points.len()].to_vec();
+
+    // (median_idx, L.to_vec(), R.to_vec())
+    return (median_idx, lhs, rhs);
 }
 
 // Constructs and returns a balltree's root node
 fn construct(points: &Vec<Vidvec>) -> Box<Node> {
     if points.len() == 0 {
         // create a leaf B containing the single point in D
-        let leaf = Node {
-            left: None,
-            right: None,
-            vid_vector: points[0]
-        };
-        // return B
+        let leaf = Node::new(None, None, points[0].clone(), 0.0);
+
         return Box::new(leaf); 
     } else {
+        let vidvec_vec = &points.to_vec();
+
         // let c be the dimension of greatest spread
-        let highest_spread_dimension = get_max_dimension_spread(points);
-        
+        let highest_spread_dimension = get_max_dimension_spread(vidvec_vec);
+
         // let p be the central point selected considering c
-        let median_pt = points_median(points, highest_spread_dimension as i64);
-
         // let L, R be the sets of points lying to the left and right of the median along dimension c
-        
-        // create B with two children: 
-        let B = Node {
-            left:  Some(Box::new(construct(&points[..median_pt]))),
-            right: Some(Box::new(construct(&points[(median_pt + 1)..].to_vec()))),
-            vid_vector: points[median_pt].clone(),
-        };
-        //     B.pivot := p
-        //     B.child1 := construct_balltree(L),
-        //     B.child2 := construct_balltree(R),
-        //     let B.radius be maximum distance from p among children
+        let (mid, lhs, rhs) = points_median(vidvec_vec, highest_spread_dimension as i64);
 
-        return B;
+        let mut max_dist = 0.0;
+        let midpoint = points[mid].clone();
+        for point in &lhs {
+            let euc_dist = math::euclidean_dist(&point, &midpoint);
+            if euc_dist > max_dist {
+                max_dist = euc_dist;
+            }
+        }
+        for point in &rhs {
+            let euc_dist = math::euclidean_dist(&point, &midpoint);
+            if euc_dist > max_dist {
+                max_dist = euc_dist;
+            }
+        }
+        
+        // create B with two children:
+        let b = Node::new(
+            Some(construct(&lhs)), // B.child1 := construct_balltree(L),
+            Some(construct(&rhs)), // B.child2 := construct_balltree(R),
+            midpoint, // B.pivot := p
+            max_dist // let B.radius be maximum distance from p among children
+        );
+
+        return Box::new(b);
     }
 }
 
-// fn find(vector_id: String, root: &Node) -> Option<&Node> {
-//     if root.get_vector().get_id() == &vector_id {
-//         return Some(root)
-//     } else {
-        
-//     }
+#[cfg(test)]
+mod tests {
 
-//     return None
-// }
+    #[test]
+    fn test_creation_simple() {
+        assert!(true);
+    }
+}

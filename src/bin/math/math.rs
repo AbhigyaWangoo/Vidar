@@ -1,3 +1,5 @@
+use super::super::cache;
+
 
 // Finds the mean of a set of points
 fn mean(points: &Vec<i64>) -> f64 {
@@ -21,4 +23,16 @@ pub fn std(points: &Vec<i64>) -> f64 {
     }
 
     return (running_numerator / points.len() as f64).sqrt();
+}
+
+pub fn euclidean_dist(a: &cache::node::Vidvec, b: &cache::node::Vidvec) -> f64 {
+    let a_vec = a.get_vector();
+    let b_vec = b.get_vector();
+
+    assert!(a_vec.len() == b_vec.len());
+
+    // Euclidean distance between two vectors
+    let sum_of_squares: i64 = a_vec.iter().zip(b_vec.iter()).map(|(&x, &y)| (x - y) * (x - y)).sum();
+
+    (sum_of_squares as f64).sqrt()
 }
