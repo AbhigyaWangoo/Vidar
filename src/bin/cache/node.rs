@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone)]
 pub struct Vidvec {
     id: String,
@@ -29,6 +31,12 @@ impl Node {
 
     pub fn get_left(&self) -> &Option<Box<Node>> {
         &self.left
+    }
+}
+
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.vid_vector)
     }
 }
 
